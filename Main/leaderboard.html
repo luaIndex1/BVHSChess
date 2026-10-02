@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tournament Results — Community Chess Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span class="kn">♞</span><a href="main.html" style="color:inherit;text-decoration:none;">BVHS chess club</a></div>
+  <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="about.html">About</a>
+    <a href="events.html">Events</a>
+    <a href="leaderboard.html">Top Players</a>
+    <a href="gallery.html">Photo Gallery(none yet!)</a>
+    <a href="join.html">Form</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <span class="kicker">Season</span>
+  <h1>Tournament Leaderboard</h1>
+  <p>Top performers this season, plus our Most Improved Player.</p>
+</div>
+
+<section>
+  <div class="section-head reveal"><span class="kicker">Rankings</span><h2>Leaderboard</h2></div>
+  <div class="board reveal">
+    <table>
+      <thead>
+        <tr><th>Player</th><th>Wins</th><th>Score</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="rank r1">1</span>M. Alvarez</td>
+          <td>14</td>
+          <td><div class="score-bar"><i data-w="92%"></i></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank r2">2</span>J. Okafor</td>
+          <td>12</td>
+          <td><div class="score-bar"><i data-w="80%"></i></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank r3">3</span>P. Chen</td>
+          <td>11</td>
+          <td><div class="score-bar"><i data-w="74%"></i></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank r4">4</span>S. Whitfield</td>
+          <td>9</td>
+          <td><div class="score-bar"><i data-w="60%"></i></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank r5">5</span>D. Marsh</td>
+          <td>8</td>
+          <td><div class="score-bar"><i data-w="52%"></i></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="improved reveal">
+    <div class="medal">♟</div>
+    <div>
+      <h3>Most Improved Player</h3>
+      <p><strong>T. Nguyen</strong> — went from never winning a game to 5 wins this season. A fantastic journey from beginner to competitive player.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-left"><span class="kn">♞</span><span>Find Us — Community Center, Room 204</span></div>
+  <span>© 2026 Community Chess Club · <a href="#" id="licenseLink">License Information</a></span>
+</footer>
+
+<div class="modal-backdrop" id="licenseModal">
+  <div class="modal">
+    <h3>License Information</h3>
+    <p>This website is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0).</p>
+    <div class="row">
+      <a class="btn btn-ghost" href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">View Full License</a>
+      <button class="btn btn-ghost" id="modalClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
