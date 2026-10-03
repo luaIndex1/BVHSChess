@@ -8,7 +8,49 @@
   --line:rgba(212,175,55,.25);
   --card:rgba(255,255,255,.055);
 }
+body{
+  /* ... background gradients ... */
+  color:var(--ivory); /* <-- This is the main text color */
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+/* Example 1: Navigation links */
+.nav-links a{
+  color:var(--muted); /* <-- This is a muted, darker color */
+  /* ... */
+}
 
+/* Example 2: Hero paragraph text */
+.hero p.sub{
+  color:var(--muted); /* <-- This is a muted, darker color */
+  /* ... */
+}
+
+/* Example 3: About card text */
+.about-card p{
+  color:var(--muted); /* <-- This is a muted, darker color */
+}
+.about-card p{
+  color:var(--ivory); /* CHANGE THIS from var(--muted) to var(--ivory) */
+  margin-bottom:14px;
+}
+.hero p.sub{
+  color:var(--ivory); /* CHANGE THIS from var(--muted) to var(--ivory) */
+  margin-top:16px;
+  max-width:640px;
+  font-size:1.05rem;
+  animation:fadeUp .9s .45s both;
+}
+.nav-links a{
+  color:var(--ivory); /* CHANGE THIS from var(--muted) to var(--ivory) */
+  text-decoration:none;
+  font-size:.92rem;
+  font-weight:500;
+  padding:8px 14px;
+  border-radius:8px;
+  transition:all .25s;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 
