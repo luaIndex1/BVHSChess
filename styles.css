@@ -8,49 +8,7 @@
   --line:rgba(212,175,55,.25);
   --card:rgba(255,255,255,.055);
 }
-body{
-  /* ... background gradients ... */
-  color:var(--ivory); /* <-- This is the main text color */
-  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
-  line-height:1.6;
-  overflow-x:hidden;
-}
-/* Example 1: Navigation links */
-.nav-links a{
-  color:var(--muted); /* <-- This is a muted, darker color */
-  /* ... */
-}
 
-/* Example 2: Hero paragraph text */
-.hero p.sub{
-  color:var(--muted); /* <-- This is a muted, darker color */
-  /* ... */
-}
-
-/* Example 3: About card text */
-.about-card p{
-  color:var(--muted); /* <-- This is a muted, darker color */
-}
-.about-card p{
-  color:var(--ivory); /* CHANGE THIS from var(--muted) to var(--ivory) */
-  margin-bottom:14px;
-}
-.hero p.sub{
-  color:var(--ivory); /* CHANGE THIS from var(--muted) to var(--ivory) */
-  margin-top:16px;
-  max-width:640px;
-  font-size:1.05rem;
-  animation:fadeUp .9s .45s both;
-}
-.nav-links a{
-  color:var(--ivory); /* CHANGE THIS from var(--muted) to var(--ivory) */
-  text-decoration:none;
-  font-size:.92rem;
-  font-weight:500;
-  padding:8px 14px;
-  border-radius:8px;
-  transition:all .25s;
-}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 
@@ -155,7 +113,6 @@ nav{
 
 @keyframes shine{to{transform:translateX(130%);}}
 
-/* THE FIX FOR YOUR GHOST BUTTON */
 .btn-ghost { background: var(--card); border: 1px solid var(--line); color: #ffffff !important; }
 .btn-ghost:hover { background: var(--gold) !important; color: #0d1321 !important; }
 
@@ -361,8 +318,27 @@ footer { margin-top: 90px; }
 
 .join iframe {
   width: 100%;
-  max-width: 700px;    /* adjust this to make it bigger or smaller */
+  max-width: 700px;
   display: block;
   margin-inline: auto;
   text-align: center;
+}
+
+/* --------- NEW: "See Upcoming Events" button fix --------- */
+/* Swap class="btn-ghost" → class="btn-upcoming" on that <a> in your HTML */
+.btn-upcoming{
+  display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  padding:13px 26px;border-radius:12px;font-weight:600;font-size:.98rem;
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--ivory) !important;
+  transition:transform .25s, box-shadow .25s, background .25s, border-color .25s;
+}
+
+.btn-upcoming:hover{
+  transform:translateY(-3px);
+  background:rgba(212,175,55,.18) !important;
+  border-color:rgba(212,175,55,.55) !important;
+  color:var(--gold-2) !important;
+  box-shadow:0 12px 26px rgba(212,175,55,.4);
 }
