@@ -162,7 +162,7 @@ section{max-width:1080px;margin:0 auto;padding:40px 22px;}
 .about-card p strong{color:var(--ivory);}
 
 /* --------- Events --------- */
-.events{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;}
+.events{display:grid;grid-template-columns:repeat(auto-fit,minmax(680px,1fr));gap:22px;}
 .event{
   background:var(--card);border:1px solid var(--line);border-radius:18px;
   padding:26px 26px 22px;position:relative;transition:transform .3s, border-color .3s, box-shadow .3s;
