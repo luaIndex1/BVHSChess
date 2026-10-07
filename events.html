@@ -345,7 +345,7 @@
 
     .tooltip {
         position: absolute;
-        bottom: calc(100% + 6px);
+        left: calc(100% + 3px);
         left: 50%;
         transform: translateX(-50%);
         background: rgba(13, 19, 33, 0.95);
@@ -929,7 +929,7 @@ const events = [
     }
 
     function hideTooltip() {
-        if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+        if (activeTooltip) { activeTooltip.remove(); activetip = null; }
     }
 
     const updateDate = (delta) => {
