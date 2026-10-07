@@ -527,6 +527,20 @@
 
 <script src="./script.js"></script>
 <script>
+    function applyEventStyles(el, ev) {
+    const color = (ev.color || "#d4af37").toLowerCase();
+
+    if (color.startsWith('#')) {
+        el.style.backgroundColor = color;
+        el.style.borderLeftColor = color;
+        el.style.borderColor = color;
+        el.style.boxShadow = `inset 0 0 0 1px ${color}66`;
+    } else {
+        el.style.backgroundColor = "#d4af37";
+        el.style.borderLeftColor = "#d4af37";
+        el.style.borderColor = "#d4af37";
+    }
+}
     let mockEvents = [];
     let currentDate = new Date(2026, 9, 1);
     let viewMode = 'week';
