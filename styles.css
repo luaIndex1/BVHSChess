@@ -3,11 +3,12 @@
   --ink-2:#111a2e;
   --gold:#d4af37;
   --gold-2:#f0d47a;
-  --ivory:#f5efe0;
+  --ivory:#f0d47a;
   --muted:#9aa3b8;
   --line:rgba(212,175,55,.25);
   --card:rgba(255,255,255,.055);
 }
+
 
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
