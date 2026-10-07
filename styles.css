@@ -8,7 +8,11 @@
   --line:rgba(212,175,55,.25);
   --card:rgba(255,255,255,.055);
 }
-
+.year-label {
+position: relative;
+padding-left: 12px;
+left: 10px; /* moves right */
+}
 
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
