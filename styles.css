@@ -9,9 +9,12 @@
   --card:rgba(255,255,255,.055);
 }
 .year-label {
-position: relative;
-padding-left: 12px;
-left: 10px; /* moves right */
+font-size: 14px;
+font-weight: 600;
+color: var(--gold);
+text-align: center;
+display: block;
+width: 100%;
 }
 
 *{box-sizing:border-box;margin:0;padding:0;}
