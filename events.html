@@ -7,6 +7,445 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="./styles.css" />
+<style>
+    .calendar-wrapper {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        backdrop-filter: blur(6px);
+        overflow: hidden;
+        margin-top: 30px;
+    }
+
+    :root {
+        --hour-height: 45px;
+    }
+
+    .app-container {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+        background: transparent;
+    }
+
+    .sidebar {
+        width: 280px;
+        background: transparent;
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: var(--ivory);
+        font-size: 0.9rem;
+    }
+
+    .mini-cal-wrap {
+        background: rgba(255,255,255,.05);
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        padding: 15px;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mini-cal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .mini-cal-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ivory);
+    }
+
+    .mini-nav {
+        display: flex;
+        gap: 4px;
+    }
+
+    .mini-nav button {
+        background: rgba(212, 175, 55, 0.15);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        cursor: pointer;
+        color: var(--gold);
+        transition: all 0.15s;
+    }
+
+    .mini-nav button:hover {
+        background: rgba(212, 175, 55, 0.3);
+        border-color: var(--gold);
+    }
+
+    .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+    }
+
+    .dow-header {
+        text-align: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--muted);
+        padding: 5px 0;
+    }
+
+    .mini-day-cell {
+        aspect-ratio: 1 / 1.2;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--ivory);
+    }
+
+    .mini-day-cell:hover {
+        background: rgba(212, 175, 55, 0.25);
+        transform: scale(1.05);
+    }
+
+    .mini-day-cell.empty {
+        cursor: default;
+    }
+
+    .dots {
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--gold);
+    }
+
+    .calendar-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .calendar-header {
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+    }
+
+    .header-btn {
+        background: rgba(212, 175, 55, 0.12);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--gold);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .header-btn:hover {
+        background: rgba(212, 175, 55, 0.2);
+        border-color: var(--gold);
+    }
+
+    .header-btn.active {
+        background: linear-gradient(120deg, var(--gold), var(--gold-2));
+        color: #1a1408;
+        border-color: var(--gold);
+    }
+
+    .view-toggle {
+        display: flex;
+        gap: 6px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header-right .year-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--gold);
+    }
+
+    #mainGrid {
+        flex: 1;
+        overflow-y: auto;
+        background-color: transparent;
+    }
+
+    .month-mode {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .day-cell {
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 8px;
+        min-height: 100px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        background: transparent;
+    }
+
+    .day-cell .day-number {
+        color: var(--gold);
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .week-mode {
+        display: grid;
+        grid-template-columns: 60px repeat(7, 1fr);
+        grid-template-rows: auto auto repeat(24, var(--hour-height));
+    }
+
+    .week-header-row {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 60px repeat(7, 1fr);
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+    }
+
+    .week-header-cell {
+        padding: 8px 4px;
+        text-align: center;
+        border-right: 1px solid rgba(212, 175, 55, 0.1);
+        color: var(--ivory);
+    }
+
+    .week-header-cell:first-child {
+        border-right: 1px solid var(--line);
+    }
+
+    .all-day-row {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 60px repeat(7, 1fr);
+        border-bottom: 1px solid var(--line);
+        min-height: 35px;
+    }
+
+    .all-day-cell {
+        border-right: 1px solid rgba(212, 175, 55, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        min-height: 35px;
+    }
+
+    .all-day-cell:first-child {
+        border-right: 1px solid var(--line);
+    }
+
+    .time-label {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: right;
+        padding-right: 8px;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .timeline-cell {
+        border-right: 1px solid rgba(212, 175, 55, 0.1);
+        border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+        position: relative;
+        background: transparent;
+        overflow: visible;
+        min-height: var(--hour-height);
+    }
+
+    .event-block {
+        padding: 3px 6px;
+        font-size: 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        z-index: 5;
+        margin-bottom: 2px;
+        color: #fff;
+        border-left: 3px solid;
+    }
+
+    .event-block.timed {
+        position: absolute;
+        left: 2px;
+        right: 2px;
+        padding: 3px 6px;
+        font-size: 11px;
+        border-radius: 4px;
+        z-index: 5;
+        cursor: pointer;
+    }
+
+    .month-mode .event-block.timed {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        margin-bottom: 2px;
+    }
+
+    .event-block.all-day {
+        font-weight: 600;
+        padding: 4px 8px;
+        margin: 0;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .tooltip {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(13, 19, 33, 0.95);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.35);
+        padding: 10px;
+        min-width: 160px;
+        z-index: 100;
+        pointer-events: none;
+        border: 1px solid var(--line);
+        color: var(--ivory);
+    }
+
+    .tooltip strong {
+        color: var(--gold);
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(212, 175, 55, 0.15);
+        border: 1px solid var(--gold);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 12px;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+        z-index: 300;
+        color: var(--ivory);
+    }
+
+    .toast.hidden {
+        display: none;
+    }
+
+    #mainGrid::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #mainGrid::-webkit-scrollbar-track {
+        background: rgba(212, 175, 55, 0.05);
+    }
+
+    #mainGrid::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.3);
+        border-radius: 4px;
+    }
+
+    #mainGrid::-webkit-scrollbar-thumb:hover {
+        background: rgba(212, 175, 55, 0.5);
+    }
+
+    @media (max-width: 900px) {
+        .app-container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            max-height: 200px;
+            padding: 12px;
+        }
+
+        .mini-cal-wrap {
+            padding: 10px;
+        }
+
+        .calendar-main {
+            flex: 1;
+        }
+
+        .day-cell {
+            min-height: 80px;
+        }
+
+        :root {
+            --hour-height: 35px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .week-mode {
+            grid-template-columns: 45px repeat(7, 1fr);
+        }
+
+        .week-header-row {
+            grid-template-columns: 45px repeat(7, 1fr);
+        }
+
+        .all-day-row {
+            grid-template-columns: 45px repeat(7, 1fr);
+        }
+
+        .time-label {
+            font-size: 8px;
+            padding-right: 4px;
+        }
+
+        .event-block {
+            font-size: 9px;
+            padding: 2px 4px;
+        }
+
+        :root {
+            --hour-height: 30px;
+        }
+    }
+</style>
 </head>
 <body>
 
@@ -26,30 +465,47 @@
 <div class="page-hero">
   <span class="kicker">Calendar</span>
   <h1>Upcoming Events</h1>
-  <p>TBA</p>
+  <p>Stay organized with our interactive event calendar</p>
 </div>
 
 <section>
-  <div class="section-head reveal"><span class="kicker">Schedule</span><h2>Event Calendar</h2></div>
-  <div class="events">
-    <div class="event reveal">
-      <span class="stamp">TBA</span>
-      <h3>Weekly In-person Lions-Club Competitions</h3>
-      <dl>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-      </dl>
+  <div class="calendar-wrapper">
+    <script src="./events.js"></script>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><span>Calendar</span></div>
+            <div class="mini-cal-wrap" id="sideCalendarWrap">
+                <div class="mini-cal-header">
+                    <span class="mini-cal-title" id="sideMonthName">October</span>
+                    <div class="mini-nav">
+                        <button id="prevBtn">&lt;</button>
+                        <button id="todayBtnSide">Today</button>
+                        <button id="nextBtn">&gt;</button>
+                    </div>
+                </div>
+                <div class="mini-grid" id="sideGrid"></div>
+            </div>
+        </aside>
+
+        <main class="calendar-main">
+            <header class="calendar-header">
+                <div class="left-controls">
+                    <div class="view-toggle">
+                        <button class="header-btn active" id="weekViewBtn">Week</button>
+                        <button class="header-btn" id="monthViewBtn">Month</button>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="year-label" id="displayYear">2026</span>
+                </div>
+            </header>
+
+            <div id="mainGrid"></div>
+        </main>
     </div>
-    <div class="event reveal">
-      <span class="stamp">TBA</span>
-      <h3>Chess.Com Competition.</h3>
-      <dl>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-      </dl>
-    </div>
+
+    <div class="toast hidden" id="toast"></div>
   </div>
 </section>
 
@@ -70,5 +526,350 @@
 </div>
 
 <script src="./script.js"></script>
+<script>
+    let mockEvents = [];
+    let currentDate = new Date(2026, 9, 1);
+    let viewMode = 'week';
+    const mainGrid = document.getElementById('mainGrid');
+    const sideGrid = document.getElementById('sideGrid');
+    const sideMonthName = document.getElementById('sideMonthName');
+    const displayYear = document.getElementById('displayYear');
+    const toast = document.getElementById('toast');
+
+    const HOUR_H = 45;
+
+    function parseEvents() {
+        if (typeof events === 'undefined' || !Array.isArray(events)) {
+            showToast("events.js not found or not a valid array.");
+            return;
+        }
+
+        mockEvents = events.map(ev => {
+            let d = new Date(ev.date);
+            if (isNaN(d.getTime())) return null;
+
+            const baseDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+            if (ev.allDay) {
+                return {
+                    date: baseDate,
+                    title: ev.title || "Untitled",
+                    desc: ev.desc || "",
+                    allDay: true,
+                    color: ev.color || "#d4af37"
+                };
+            }
+
+            let startH = 0, startM = 0;
+            if (ev.start) {
+                const p = ev.start.split(':');
+                startH = parseInt(p[0]) || 0;
+                startM = parseInt(p[1]) || 0;
+            }
+            d.setHours(startH, startM, 0, 0);
+
+            let durationMin = 60;
+            if (ev.end) {
+                const p = ev.end.split(':');
+                const endH = parseInt(p[0]) || 0;
+                const endM = parseInt(p[1]) || 0;
+                durationMin = (endH * 60 + endM) - (startH * 60 + startM);
+                if (durationMin <= 0) durationMin = 60;
+            }
+
+            const remainingMin = (24 * 60) - (startH * 60 + startM);
+            if (durationMin > remainingMin) durationMin = remainingMin;
+
+            return {
+                date: baseDate,
+                title: ev.title || "Untitled",
+                desc: ev.desc || "",
+                allDay: false,
+                startHour: startH,
+                startMin: startM,
+                durationMin: durationMin,
+                color: ev.color || "#d4af37"
+            };
+        }).filter(Boolean);
+    }
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 5000);
+    }
+
+    function applyEventStyles(el, ev) {
+        const color = (ev.color || "#d4af37").toLowerCase();
+
+        if (color.startsWith('#')) {
+            el.style.backgroundColor = color;
+            el.style.borderLeftColor = color;
+        } else {
+            el.style.backgroundColor = "#d4af37";
+            el.style.borderLeftColor = "#d4af37";
+        }
+    }
+
+    function render() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        sideMonthName.innerText = new Date(year, month).toLocaleString('default', { month: 'long' });
+        displayYear.innerText = year;
+
+        mainGrid.innerHTML = '';
+        sideGrid.innerHTML = '';
+
+        mainGrid.className = viewMode === 'week' ? 'week-mode' : 'month-mode';
+
+        if (viewMode === 'month') {
+            renderMonthView(year, month);
+        } else {
+            renderWeekView(currentDate);
+        }
+
+        ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d => {
+            const h = document.createElement("div");
+            h.className = "dow-header";
+            h.textContent = d;
+            sideGrid.appendChild(h);
+        });
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            const c = document.createElement("div");
+            c.className = "mini-day-cell empty";
+            sideGrid.appendChild(c);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const cell = document.createElement("div");
+            cell.className = "mini-day-cell";
+            if (d === currentDate.getDate() && month === currentDate.getMonth()) {
+                cell.style.background = "rgba(212, 175, 55, 0.3)";
+                cell.style.color = "var(--gold)";
+            }
+
+            cell.onclick = () => {
+                currentDate = new Date(year, month, d);
+                render();
+            };
+
+            const numEl = document.createElement("span");
+            numEl.className = "mini-day-num";
+            numEl.textContent = d;
+            cell.appendChild(numEl);
+
+            const dayEvents = mockEvents.filter(e =>
+                e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === d
+            );
+            if (dayEvents.length) {
+                const dotsDiv = document.createElement("div");
+                dotsDiv.className = "dots";
+                dayEvents.forEach(ev => {
+                    const dot = document.createElement("span");
+                    dot.className = "dot";
+                    if (ev.color && ev.color.startsWith('#')) {
+                        dot.style.backgroundColor = ev.color;
+                    } else {
+                        dot.style.backgroundColor = "#d4af37";
+                    }
+                    dotsDiv.appendChild(dot);
+                });
+                cell.appendChild(dotsDiv);
+            }
+            sideGrid.appendChild(cell);
+        }
+    }
+
+    function renderMonthView(year, month) {
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        let dayCounter = 1;
+
+        for (let i = 0; i < 42; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            if (dayCounter <= daysInMonth) {
+                const numDiv = document.createElement('div');
+                numDiv.className = 'day-number';
+                numDiv.innerText = dayCounter;
+                cell.appendChild(numDiv);
+
+                const dailyEvents = mockEvents.filter(e =>
+                    e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === dayCounter
+                );
+
+                if (dailyEvents.length) {
+                    dailyEvents.forEach(ev => {
+                        const bar = document.createElement('div');
+                        bar.className = 'event-block' + (ev.allDay ? ' all-day' : '');
+                        applyEventStyles(bar, ev);
+                        bar.innerText = ev.title;
+                        cell.appendChild(bar);
+                        bar.onmouseenter = () => showTooltip(bar, ev);
+                        bar.onmouseleave = hideTooltip;
+                    });
+                }
+                dayCounter++;
+            }
+            mainGrid.appendChild(cell);
+        }
+    }
+
+    function renderWeekView(startDate) {
+        const day = startDate.getDay();
+        let sundayStart = new Date(startDate);
+        sundayStart.setDate(startDate.getDate() - day);
+
+        const headerRow = document.createElement("div");
+        headerRow.className = "week-header-row";
+        const emptyH = document.createElement("div");
+        emptyH.className = "week-header-cell";
+        headerRow.appendChild(emptyH);
+
+        for (let i = 0; i < 7; i++) {
+            const h = document.createElement("div");
+            h.className = "week-header-cell";
+            const d = new Date(sundayStart);
+            d.setDate(d.getDate() + i);
+            h.innerHTML = `<span style="display:block;font-size:10px;color:var(--muted);">${d.toLocaleString('default',{weekday:'short'})}</span><span style="font-size:18px;font-weight:700;line-height:1.2;color:var(--ivory);">${d.getDate()}</span>`;
+            headerRow.appendChild(h);
+        }
+        mainGrid.appendChild(headerRow);
+
+        const allDayRow = document.createElement("div");
+        allDayRow.className = "all-day-row";
+        const emptyAD = document.createElement("div");
+        emptyAD.className = "all-day-cell";
+        allDayRow.appendChild(emptyAD);
+
+        for (let i = 0; i < 7; i++) {
+            const dDate = new Date(sundayStart);
+            dDate.setDate(dDate.getDate() + i);
+            const cell = document.createElement("div");
+            cell.className = "all-day-cell";
+
+            const adEvents = mockEvents.filter(e =>
+                e.date.getFullYear() === dDate.getFullYear() &&
+                e.date.getMonth() === dDate.getMonth() &&
+                e.date.getDate() === dDate.getDate() &&
+                e.allDay === true
+            );
+
+            if (adEvents.length) {
+                adEvents.forEach(ev => {
+                    const bar = document.createElement('div');
+                    bar.className = 'event-block all-day';
+                    applyEventStyles(bar, ev);
+                    bar.innerText = ev.title;
+                    cell.appendChild(bar);
+                    bar.onmouseenter = () => showTooltip(bar, ev);
+                    bar.onmouseleave = hideTooltip;
+                });
+            }
+            allDayRow.appendChild(cell);
+        }
+        mainGrid.appendChild(allDayRow);
+
+        for (let hour = 0; hour < 24; hour++) {
+            const label = document.createElement("div");
+            label.className = "time-label";
+            const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            label.textContent = `${displayHour} ${ampm}`;
+            mainGrid.appendChild(label);
+
+            for (let i = 0; i < 7; i++) {
+                const cell = document.createElement("div");
+                cell.className = "timeline-cell";
+
+                const currentDayDate = new Date(sundayStart);
+                currentDayDate.setDate(currentDayDate.getDate() + i);
+
+                const dailyEvents = mockEvents.filter(e =>
+                    e.date.getFullYear() === currentDayDate.getFullYear() &&
+                    e.date.getMonth() === currentDayDate.getMonth() &&
+                    e.date.getDate() === currentDayDate.getDate() &&
+                    e.startHour === hour &&
+                    !e.allDay
+                );
+
+                if (dailyEvents.length) {
+                    dailyEvents.forEach(ev => {
+                        const bar = document.createElement('div');
+                        bar.className = 'event-block timed';
+                        applyEventStyles(bar, ev);
+
+                        const topOffset = (ev.startMin / 60) * HOUR_H;
+                        const maxPx = ((24 * 60 - (hour * 60 + ev.startMin)) / 60) * HOUR_H;
+                        const barH = Math.min((ev.durationMin / 60) * HOUR_H, maxPx);
+
+                        bar.style.top = `${topOffset}px`;
+                        bar.style.height = `${Math.max(barH - 2, 12)}px`;
+                        bar.innerText = ev.title;
+                        cell.appendChild(bar);
+                        bar.onmouseenter = () => showTooltip(bar, ev);
+                        bar.onmouseleave = hideTooltip;
+                    });
+                }
+
+                mainGrid.appendChild(cell);
+            }
+        }
+    }
+
+    let activeTooltip = null;
+    function showTooltip(el, event) {
+        hideTooltip();
+        const tip = document.createElement("div");
+        tip.className = "tooltip";
+        tip.innerHTML = `<strong>${event.title}</strong><br><small style="color:var(--muted);">${event.desc || ""}</small>`;
+        el.appendChild(tip);
+        activeTooltip = tip;
+    }
+
+    function hideTooltip() {
+        if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+    }
+
+    const updateDate = (delta) => {
+        if (delta === 0) {
+            currentDate = new Date();
+        } else {
+            let m = currentDate.getMonth() + delta;
+            let y = currentDate.getFullYear();
+            if (m < 0)  { m += 12; y--; }
+            if (m > 11) { m -= 12; y++; }
+            currentDate = new Date(y, m, 1);
+        }
+        render();
+    };
+
+    document.getElementById('prevBtn').onclick = () => updateDate(-1);
+    document.getElementById('nextBtn').onclick = () => updateDate(1);
+    document.getElementById('todayBtnSide').onclick = () => updateDate(0);
+
+    document.getElementById('monthViewBtn').onclick = (e) => {
+        viewMode = 'month';
+        document.querySelectorAll('.view-toggle .header-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        render();
+    };
+
+    document.getElementById('weekViewBtn').onclick = (e) => {
+        viewMode = 'week';
+        document.querySelectorAll('.view-toggle .header-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        render();
+    };
+
+    window.onload = () => {
+        parseEvents();
+        render();
+    };
+</script>
 </body>
 </html>
