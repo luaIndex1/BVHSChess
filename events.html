@@ -352,7 +352,7 @@
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,.35);
         padding: 10px;
-        min-width: 60px;
+        min-width: 160px;
         z-index: 100;
         pointer-events: none;
         border: 1px solid var(--line);
@@ -536,20 +536,56 @@
 <div class="section-head reveal"><span class="kicker">Chess Events</span><h2>Calendar</h2></div>
 <section>
   <div class="calendar-wrapper">
+
     <script>
-const events = [
-  // --- Events Json ---
-  {"date":"2026-10-07","title":"Interest Form","start":"08:30","end":"24:00","color":"#3b5bdb"},
-  {"date":"2026-10-08","title":"Interest Form","start":"08:30","end":"24:00","color":"#3b5bdb"},
-  {"date":"2026-10-09","title":"Interest Form","start":"08:30","end":"24:00","color":"#3b5bdb"},
-  {"date":"2090-10-10","title":"TBA","start":"09:00","end":"10:30","color":"#e74c3c"},
-  {"date":"2090-10-10","title":"TBA","start":"10:30","end":"12:00","color":"#28a745"},
-  {"date":"2090-10-10","title":"TBA","start":"12:00","end":"13:00","color":"#f39c12"},
-  {"date":"2090-10-10","title":"TBA","start":"13:00","end":"14:30","color":"#9334f2"},
-  {"date":"2090-10-10","title":"TBA","start":"14:30","end":"16:00","color":"#1abc9c"},
-  {"date":"2090-10-10","title":"TBA","start":"16:00","end":"17:30","color":"#d63384"},
-  {"date":"2090-10-10","title":"TBA","start":"18:00","end":"19:30","color":"#ff6b6b"}
-];
+      // ─── Live CSV loader ─────────────────────────────────────────
+      const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRmBBubEZhXyYmlD_bgtx9Ag2bSeMUloe8iV_vqufIKwzwQO6OL_hIN7JkQkKtGDOHlByPXC5kISGA/pub?output=csv";
+
+      let events = [];
+
+      async function fetchEvents() {
+        try {
+          const res = await fetch(CSV_URL);
+          if (!res.ok) throw new Error("CSV fetch failed: " + res.status);
+          const text = await res.text();
+
+          const lines = text.split("\n").filter(l => l.trim());
+          if (!lines.length) return;
+
+          const header = lines[0].split(",").map(h => h.trim().toLowerCase());
+
+          for (let i = 1; i < lines.length; i++) {
+            const cols = parseCSVLine(lines[i]);
+            const row = {};
+            header.forEach((h, idx) => { row[h] = (cols[idx] || "").trim(); });
+
+            events.push({
+              date:   row.date   || "",
+              title:  row.title  || "Untitled",
+              start:  row.start  || "00:00",
+              end:    row.end    || "24:00",
+              color:  row.color  || "#d4af37",
+              allDay: row.allDay === "true" || row.allDay === "TRUE",
+              desc:   row.desc   || ""
+            });
+          }
+        } catch (err) {
+          console.error("CSV load error:", err);
+          // events stays [] → calendar renders empty
+        }
+      }
+
+      function parseCSVLine(line) {
+        const cols = [];
+        let cur = "", inQ = false;
+        for (const ch of line) {
+          if (ch === '"')       { inQ = !inQ; }
+          else if (ch === "," && !inQ) { cols.push(cur); cur = ""; }
+          else                 { cur += ch; }
+        }
+        cols.push(cur);
+        return cols.map(c => c.trim());
+      }
     </script>
 
     <div class="app-container">
@@ -608,19 +644,20 @@ const events = [
 <script src="./script.js"></script>
 <script>
     function applyEventStyles(el, ev) {
-    const color = (ev.color || "#d4af37").toLowerCase();
+        const color = (ev.color || "#d4af37").toLowerCase();
 
-    if (color.startsWith('#')) {
-        el.style.backgroundColor = color;
-        el.style.borderLeftColor = color;
-        el.style.borderColor = color;
-        el.style.boxShadow = `inset 0 0 0 1px ${color}66`;
-    } else {
-        el.style.backgroundColor = "#d4af37";
-        el.style.borderLeftColor = "#d4af37";
-        el.style.borderColor = "#d4af37";
+        if (color.startsWith('#')) {
+            el.style.backgroundColor = color;
+            el.style.borderLeftColor = color;
+            el.style.borderColor = color;
+            el.style.boxShadow = `inset 0 0 0 1px ${color}66`;
+        } else {
+            el.style.backgroundColor = "#d4af37";
+            el.style.borderLeftColor = "#d4af37";
+            el.style.borderColor = "#d4af37";
+        }
     }
-}
+
     let mockEvents = [];
     let currentDate = new Date(2026, 9, 1);
     let viewMode = 'week';
@@ -634,7 +671,7 @@ const events = [
 
     function parseEvents() {
         if (typeof events === 'undefined' || !Array.isArray(events)) {
-            showToast("events.js not found or not a valid array.");
+            showToast("events not loaded.");
             return;
         }
 
@@ -691,21 +728,6 @@ const events = [
         toast.textContent = msg;
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 5000);
-    }
-
-    function applyEventStyles(el, ev) {
-        const color = (ev.color || "#d4af37").toLowerCase();
-
-        if (color.startsWith('#')) {
-            el.style.backgroundColor = color;
-            el.style.borderLeftColor = color;
-            el.style.borderColor = color;
-            el.style.boxShadow = `inset 0 0 0 1px ${color}66`;
-        } else {
-            el.style.backgroundColor = "#d4af37";
-            el.style.borderLeftColor = "#d4af37";
-            el.style.borderColor = "#d4af37";
-        }
     }
 
     function render() {
@@ -929,7 +951,7 @@ const events = [
     }
 
     function hideTooltip() {
-        if (activeTooltip) { activeTooltip.remove(); activetip = null; }
+        if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
     }
 
     const updateDate = (delta) => {
@@ -963,10 +985,12 @@ const events = [
         render();
     };
 
-    window.onload = () => {
+    // ─── Boot: fetch live CSV, then render ─────────────────────────
+    window.addEventListener("load", async () => {
+        await fetchEvents();
         parseEvents();
         render();
-    };
+    });
 </script>
 </body>
 </html>
