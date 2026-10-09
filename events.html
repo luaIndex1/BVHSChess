@@ -196,6 +196,8 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .header-right .year-label {
@@ -204,11 +206,28 @@
         color: var(--gold);
     }
 
+    /* ── Week days bar ── */
+    .week-days-bar {
+        display: flex;
+        gap: 3px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+    }
+    .week-days-bar span {
+        font-size: 10px;
+        color: var(--muted);
+        padding: 2px 8px;
+        background: rgba(212, 175, 55, 0.08);
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
     #mainGrid {
     flex: 1;
     overflow-y: auto;
     background-color: transparent;
     width: 100%;
+    position: relative;
 }
     .month-mode {
         display: grid;
@@ -325,8 +344,6 @@
         border-radius: 4px;
         overflow: visible;
         cursor: pointer;
-        white-space: normal;
-    overflow-wrap: break-word;
     }
 
     .month-mode .event-block.timed {
@@ -352,20 +369,41 @@
         background: rgba(13, 19, 33, 0.95);
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,.35);
-   
         min-width: 60px;
         border: 1px solid var(--line);
         color: var(--ivory);
         display: none;
-    padding: 6px 8px;
-    min-width: 0;
-    max-width: 160px;
-    font-size: 10px;
-    line-height: 1.2;
+        padding: 6px 8px;
+        min-width: 0;
+        max-width: 160px;
+        font-size: 10px;
+        line-height: 1.2;
     }
 
     .tooltip strong {
         color: var(--gold);
+    }
+
+    /* ── Now line (Google Calendar style) ── */
+    .now-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e53935;
+        z-index: 999999;
+        pointer-events: none;
+        display: none;
+    }
+    .now-line::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: -4px;
+        width: 8px;
+        height: 10px;
+        border-radius: 3px;
+        background: #e53935;
     }
 
     .toast {
@@ -640,7 +678,9 @@
                 </div>
             </header>
 
-            <div id="mainGrid"></div>
+            <div id="mainGrid">
+                <div class="now-line" id="nowLine"></div>
+            </div>
         </main>
     </div>
 
@@ -690,7 +730,7 @@
     const toast = document.getElementById('toast');
     const HOUR_H = 45;
 
-    /* ── Tooltip (single instance, lives in <body>) ── */
+    /* ── Tooltip ── */
     let tooltipEl = null;
 
     function getTooltipEl() {
@@ -711,8 +751,8 @@
             (ev.desc ? `<br>${ev.desc}` : '') +
             (ev.allDay ? `<br><em>All day</em>` : '');
 
-        const tipW = 180;
-        const tipH = 80;
+        const tipW = 160;
+        const tipH = 70;
         let left, top;
 
         if (rect.right + tipW + 12 < window.innerWidth) {
@@ -736,16 +776,20 @@
         if (tooltipEl) tooltipEl.style.display = 'none';
     }
 
+    /* ── Date parsing (manual, no UTC shift) ── */
     function parseEvents() {
         if (typeof events === 'undefined' || !Array.isArray(events)) {
             showToast("events not loaded.");
             return;
         }
         mockEvents = events.map(ev => {
-            let d = new Date(ev.date);
-            if (isNaN(d.getTime())) return null;
-            const baseDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                baseDate.setDate(baseDate.getDate() + 1);
+            const parts = ev.date.split('-');
+            const y  = parseInt(parts[0]);
+            const m  = parseInt(parts[1]) - 1;
+            const dd = parseInt(parts[2]);
+            if (isNaN(y) || isNaN(m) || isNaN(dd)) return null;
+            const baseDate = new Date(y, m, dd);
+
             if (ev.allDay) {
                 return {
                     date: baseDate,
@@ -762,7 +806,6 @@
                 startH = parseInt(p[0]) || 0;
                 startM = parseInt(p[1]) || 0;
             }
-            d.setHours(startH, startM, 0, 0);
 
             let durationMin = 60;
             if (ev.end) {
@@ -795,6 +838,72 @@
         setTimeout(() => toast.classList.add('hidden'), 5000);
     }
 
+    /* ── Week days bar ── */
+    function updateWeekDaysBar() {
+        const bar = document.getElementById('weekDaysBar');
+        if (!bar) return;
+
+        if (viewMode !== 'week') { bar.innerHTML = ''; return; }
+
+        const day = currentDate.getDay();
+        const sundayStart = new Date(currentDate);
+        sundayStart.setDate(currentDate.getDate() - day);
+
+        const names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            const d = new Date(sundayStart);
+            d.setDate(sundayStart.getDate() + i);
+            html += `<span>${names[i]} ${d.getDate()}</span>`;
+        }
+        bar.innerHTML = html;
+    }
+
+    function positionNowLine() {
+  const line = document.getElementById('nowLine');
+  if (!line) return;
+
+  if (viewMode !== 'week') {
+    line.style.display = 'none';
+    return;
+  }
+
+  // ── Only show if the displayed week contains today ──
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const sundayStart = new Date(currentDate);
+  sundayStart.setDate(currentDate.getDate() - currentDate.getDay());
+  sundayStart.setHours(0, 0, 0, 0);
+
+  const weekEnd = new Date(sundayStart);
+  weekEnd.setDate(sundayStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  if (today < sundayStart || today > weekEnd) {
+    line.style.display = 'none';
+    return;
+  }
+
+  // ── Position at current time ──
+  const grid = document.getElementById('mainGrid');
+  const headerRow = grid.querySelector('.week-header-row');
+  const allDayRow = grid.querySelector('.all-day-row');
+
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+
+  const topPx =
+    (headerRow ? headerRow.offsetHeight : 40) +
+    (allDayRow ? allDayRow.offsetHeight : 35) +
+    ((hours * 60 + minutes) / 60) * HOUR_H;
+
+  line.style.top = topPx + 'px';
+  line.style.display = 'block';
+}
+
+    /* ── Render ── */
     function render() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -805,6 +914,12 @@
         mainGrid.innerHTML = '';
         sideGrid.innerHTML = '';
 
+        // Re-add the now-line (innerHTML wiped it)
+        const nowLine = document.createElement('div');
+        nowLine.className = 'now-line';
+        nowLine.id = 'nowLine';
+        mainGrid.appendChild(nowLine);
+
         mainGrid.className = viewMode === 'week' ? 'week-mode' : 'month-mode';
 
         if (viewMode === 'month') {
@@ -812,6 +927,9 @@
         } else {
             renderWeekView(currentDate);
         }
+
+        updateWeekDaysBar();
+        positionNowLine();
 
         ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d => {
             const h = document.createElement("div");
@@ -1035,23 +1153,26 @@
         render();
     };
 
+    /* ── Reveal animation ── */
+    document.querySelectorAll('.reveal').forEach(el => {
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    el.classList.add('in');
+                    obs.unobserve(el);
+                }
+            });
+        }, { threshold: 0.15 });
+        obs.observe(el);
+    });
+
+    /* ── Boot ── */
     window.addEventListener("load", async () => {
         await fetchEvents();
         parseEvents();
         render();
+        setInterval(positionNowLine, 60000);
     });
-// ── Reveal animation ──
-document.querySelectorAll('.reveal').forEach(el => {
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        el.classList.add('in');
-        obs.unobserve(el);
-      }
-    });
-  }, { threshold: 0.15 });
-  obs.observe(el);
-});
 </script>
 </body>
 </html>
