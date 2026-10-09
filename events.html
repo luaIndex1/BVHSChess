@@ -323,7 +323,7 @@
         padding: 3px 6px;
         font-size: 11px;
         border-radius: 4px;
-        z-index: 5;
+        overflow: visible;
         cursor: pointer;
     }
 
@@ -344,19 +344,22 @@
     }
 
     .tooltip {
-        position: absolute;
-        left: calc(100% + 3px);
-        left: 50%;
-        transform: translateX(-50%);
+        position: fixed;
+        z-index: 999999;
+        pointer-events: none;
         background: rgba(13, 19, 33, 0.95);
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,.35);
-        padding: 10px;
+   
         min-width: 60px;
-        z-index: 100;
-        pointer-events: none;
         border: 1px solid var(--line);
         color: var(--ivory);
+        display: none;
+    padding: 6px 8px;
+    min-width: 0;
+    max-width: 160px;
+    font-size: 10px;
+    line-height: 1.2;
     }
 
     .tooltip strong {
@@ -466,14 +469,15 @@
         .sidebar {
             max-height: 280px;
         }
-.week-mode {
-    grid-template-columns: 45px repeat(7, 1fr);
-    width: 100%;
-}
+        .week-mode {
+            grid-template-columns: 45px repeat(7, 1fr);
+            width: 100%;
+        }
 
-.timeline-cell {
-    min-width: 36px;
-}
+        .timeline-cell {
+            min-width: 36px;
+        }
+
         .mini-nav button {
             padding: 2px 5px;
             font-size: 9px;
@@ -532,39 +536,37 @@
   <span class="kicker">Chess Calendar</span>
   <h1>Upcoming Events</h1>
   <p>Stay organized with our interactive event calendar</p>
-<section>
-  <div class="section-head reveal"><span class="kicker">Chess Updates!</span><h2>Event Cards</h2></div>
-  <div class="events">
-    <div class="event reveal">
-      <span class="stamp">Weekly</span>
-      <h3>TBA</h3>
-      <dl>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-      </dl>
+  <section>
+    <div class="section-head reveal"><span class="kicker">Chess Updates!</span><h2>Event Cards</h2></div>
+    <div class="events">
+      <div class="event reveal">
+        <span class="stamp">Weekly</span>
+        <h3>TBA</h3>
+        <dl>
+          <dt>TBA</dt><dd>TBA</dd>
+          <dt>TBA</dt><dd>TBA</dd>
+          <dt>TBA</dt><dd>TBA</dd>
+        </dl>
+      </div>
+      <div class="event reveal">
+        <span class="stamp">TBA</span>
+        <h3>Chess.com</h3>
+        <dl>
+          <dt>TBA</dt><dd>TBA</dd>
+          <dt>TBA</dt><dd>TBA</dd>
+          <dt>TBA</dt><dd>TBA</dd>
+        </dl>
+      </div>
     </div>
-    <div class="event reveal">
-      <span class="stamp">TBA</span>
-      <h3>Chess.com</h3>
-      <dl>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-        <dt>TBA</dt><dd>TBA</dd>
-      </dl>
-    </div>
-  </div>
-</section>
+  </section>
 </div>
-    
+
 <div class="section-head reveal"><span class="kicker">Chess Events</span><h2>Calendar</h2></div>
 <section>
   <div class="calendar-wrapper">
 
     <script>
-      // ─── Live CSV loader ─────────────────────────────────────────
       const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRmBBubEZhXyYmlD_bgtx9Ag2bSeMUloe8iV_vqufIKwzwQO6OL_hIN7JkQkKtGDOHlByPXC5kISGA/pub?gid=0&single=true&output=csv";
-
       let events = [];
 
       async function fetchEvents() {
@@ -572,17 +574,13 @@
           const res = await fetch(CSV_URL);
           if (!res.ok) throw new Error("CSV fetch failed: " + res.status);
           const text = await res.text();
-
           const lines = text.split("\n").filter(l => l.trim());
           if (!lines.length) return;
-
           const header = lines[0].split(",").map(h => h.trim().toLowerCase());
-
           for (let i = 1; i < lines.length; i++) {
             const cols = parseCSVLine(lines[i]);
             const row = {};
             header.forEach((h, idx) => { row[h] = (cols[idx] || "").trim(); });
-
             events.push({
               date:   row.date   || "",
               title:  row.title  || "Untitled",
@@ -595,7 +593,6 @@
           }
         } catch (err) {
           console.error("CSV load error:", err);
-          // events stays [] → calendar renders empty
         }
       }
 
@@ -669,7 +666,6 @@
 <script>
     function applyEventStyles(el, ev) {
         const color = (ev.color || "#d4af37").toLowerCase();
-
         if (color.startsWith('#')) {
             el.style.backgroundColor = color;
             el.style.borderLeftColor = color;
@@ -690,21 +686,64 @@
     const sideMonthName = document.getElementById('sideMonthName');
     const displayYear = document.getElementById('displayYear');
     const toast = document.getElementById('toast');
-
     const HOUR_H = 45;
+
+    /* ── Tooltip (single instance, lives in <body>) ── */
+    let tooltipEl = null;
+
+    function getTooltipEl() {
+        if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.className = 'tooltip';
+            document.body.appendChild(tooltipEl);
+        }
+        return tooltipEl;
+    }
+
+    function showTooltip(targetEl, ev) {
+        const tip = getTooltipEl();
+        const rect = targetEl.getBoundingClientRect();
+
+        const html =
+            `<strong>${ev.title || 'Untitled'}</strong>` +
+            (ev.desc ? `<br>${ev.desc}` : '') +
+            (ev.allDay ? `<br><em>All day</em>` : '');
+
+        const tipW = 180;
+        const tipH = 80;
+        let left, top;
+
+        if (rect.right + tipW + 12 < window.innerWidth) {
+            left = rect.right + 8;
+            top  = rect.top + (rect.height / 2) - (tipH / 2);
+        } else {
+            left = rect.left;
+            top  = rect.bottom + 8;
+        }
+
+        left = Math.max(8, left);
+        top  = Math.max(8, top);
+
+        tip.style.left = left + 'px';
+        tip.style.top  = top  + 'px';
+        tip.innerHTML  = html;
+        tip.style.display = 'block';
+    }
+
+    function hideTooltip() {
+        if (tooltipEl) tooltipEl.style.display = 'none';
+    }
 
     function parseEvents() {
         if (typeof events === 'undefined' || !Array.isArray(events)) {
             showToast("events not loaded.");
             return;
         }
-
         mockEvents = events.map(ev => {
             let d = new Date(ev.date);
             if (isNaN(d.getTime())) return null;
-
             const baseDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
+                baseDate.setDate(baseDate.getDate() + 1);
             if (ev.allDay) {
                 return {
                     date: baseDate,
@@ -794,7 +833,6 @@
                 cell.style.background = "rgba(212, 175, 55, 0.3)";
                 cell.style.color = "var(--gold)";
             }
-
             cell.onclick = () => {
                 currentDate = new Date(year, month, d);
                 render();
@@ -964,20 +1002,6 @@
         }
     }
 
-    let activeTooltip = null;
-    function showTooltip(el, event) {
-        hideTooltip();
-        const tip = document.createElement("div");
-        tip.className = "tooltip";
-        tip.innerHTML = `<strong>${event.title}</strong><br><small style="color:var(--muted);">${event.desc || ""}</small>`;
-        el.appendChild(tip);
-        activeTooltip = tip;
-    }
-
-    function hideTooltip() {
-        if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
-    }
-
     const updateDate = (delta) => {
         if (delta === 0) {
             currentDate = new Date();
@@ -1009,12 +1033,23 @@
         render();
     };
 
-    // ─── Boot: fetch live CSV, then render ─────────────────────────
     window.addEventListener("load", async () => {
         await fetchEvents();
         parseEvents();
         render();
     });
+// ── Reveal animation ──
+document.querySelectorAll('.reveal').forEach(el => {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        el.classList.add('in');
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.15 });
+  obs.observe(el);
+});
 </script>
 </body>
 </html>
