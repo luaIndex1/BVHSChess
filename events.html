@@ -9,12 +9,12 @@
 <link rel="stylesheet" href="./styles.css" />
 <style>
     .calendar-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
     .calendar-wrapper {
         background: var(--card);
         border: 1px solid var(--line);
@@ -192,13 +192,24 @@
         gap: 6px;
     }
 
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
+.calendar-header {
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    position: relative; /* Enables absolute center alignment */
+}
+
+.header-right {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
     .header-right .year-label {
         font-size: 14px;
@@ -223,15 +234,26 @@
     }
 
     #mainGrid {
-    flex: 1;
-    overflow-y: auto;
-    background-color: transparent;
-    width: 100%;
-    position: relative;
-}
+        flex: 1;
+        overflow-y: auto;
+        background-color: transparent;
+        width: 100%;
+        position: relative;
+    }
     .month-mode {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
+    }
+
+    .month-header-cell {
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--gold);
+        padding: 8px 0;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: rgba(212, 175, 55, 0.05);
     }
 
     .day-cell {
@@ -254,11 +276,11 @@
     }
 
     .week-mode {
-    display: grid;
-    grid-template-columns: 60px repeat(7, 1fr);
-    grid-template-rows: auto auto repeat(24, var(--hour-height));
-    width: 100%;
-}
+        display: grid;
+        grid-template-columns: 60px repeat(7, 1fr);
+        grid-template-rows: auto auto repeat(24, var(--hour-height));
+        width: 100%;
+    }
 
     .week-header-row {
         grid-column: 1 / -1;
@@ -313,14 +335,14 @@
     }
 
     .timeline-cell {
-    border-right: 1px solid rgba(212, 175, 55, 0.1);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.08);
-    position: relative;
-    background: transparent;
-    overflow: visible;
-    min-height: var(--hour-height);
-    min-width: 50px;
-}
+        border-right: 1px solid rgba(212, 175, 55, 0.1);
+        border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+        position: relative;
+        background: transparent;
+        overflow: visible;
+        min-height: var(--hour-height);
+        min-width: 50px;
+    }
 
     .event-block {
         padding: 3px 6px;
@@ -860,48 +882,48 @@
     }
 
     function positionNowLine() {
-  const line = document.getElementById('nowLine');
-  if (!line) return;
+        const line = document.getElementById('nowLine');
+        if (!line) return;
 
-  if (viewMode !== 'week') {
-    line.style.display = 'none';
-    return;
-  }
+        if (viewMode !== 'week') {
+            line.style.display = 'none';
+            return;
+        }
 
-  // ── Only show if the displayed week contains today ──
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+        // ── Only show if the displayed week contains today ──
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-  const sundayStart = new Date(currentDate);
-  sundayStart.setDate(currentDate.getDate() - currentDate.getDay());
-  sundayStart.setHours(0, 0, 0, 0);
+        const sundayStart = new Date(currentDate);
+        sundayStart.setDate(currentDate.getDate() - currentDate.getDay());
+        sundayStart.setHours(0, 0, 0, 0);
 
-  const weekEnd = new Date(sundayStart);
-  weekEnd.setDate(sundayStart.getDate() + 6);
-  weekEnd.setHours(23, 59, 59, 999);
+        const weekEnd = new Date(sundayStart);
+        weekEnd.setDate(sundayStart.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
 
-  if (today < sundayStart || today > weekEnd) {
-    line.style.display = 'none';
-    return;
-  }
+        if (today < sundayStart || today > weekEnd) {
+            line.style.display = 'none';
+            return;
+        }
 
-  // ── Position at current time ──
-  const grid = document.getElementById('mainGrid');
-  const headerRow = grid.querySelector('.week-header-row');
-  const allDayRow = grid.querySelector('.all-day-row');
+        // ── Position at current time ──
+        const grid = document.getElementById('mainGrid');
+        const headerRow = grid.querySelector('.week-header-row');
+        const allDayRow = grid.querySelector('.all-day-row');
 
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
 
-  const topPx =
-    (headerRow ? headerRow.offsetHeight : 40) +
-    (allDayRow ? allDayRow.offsetHeight : 35) +
-    ((hours * 60 + minutes) / 60) * HOUR_H;
+        const topPx =
+            (headerRow ? headerRow.offsetHeight : 40) +
+            (allDayRow ? allDayRow.offsetHeight : 35) +
+            ((hours * 60 + minutes) / 60) * HOUR_H;
 
-  line.style.top = topPx + 'px';
-  line.style.display = 'block';
-}
+        line.style.top = topPx + 'px';
+        line.style.display = 'block';
+    }
 
     /* ── Render ── */
     function render() {
@@ -986,6 +1008,15 @@
     }
 
     function renderMonthView(year, month) {
+        // Render weekday bar
+        const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        weekdays.forEach(day => {
+            const headerCell = document.createElement('div');
+            headerCell.className = 'month-header-cell';
+            headerCell.innerText = day;
+            mainGrid.appendChild(headerCell);
+        });
+
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         let dayCounter = 1;
@@ -993,7 +1024,8 @@
         for (let i = 0; i < 42; i++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
-            if (dayCounter <= daysInMonth) {
+
+            if (i >= firstDayOfMonth && dayCounter <= daysInMonth) {
                 const numDiv = document.createElement('div');
                 numDiv.className = 'day-number';
                 numDiv.innerText = dayCounter;
